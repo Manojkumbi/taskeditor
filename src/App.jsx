@@ -22,6 +22,7 @@ const App = () => {
 }, [darkMode]);
 
 
+
   async function openFile() {
   const [fileHandle] = await window.showOpenFilePicker({
     types: [
@@ -50,8 +51,9 @@ const App = () => {
 }
 
 
-  // Journal entries data
-  const [journalEntries, setJournalEntries] = useState([
+ const [journalEntries, setJournalEntries] = useState(() => {
+  const saved = localStorage.getItem('journalEntries');
+  return saved ? JSON.parse(saved) : [
     {
       id: "1748774533500",
       timestamp: "2025-06-01T10:42:13.633Z",
@@ -61,10 +63,12 @@ const App = () => {
       tags: ["productive"],
       word_count: 10
     }
-  ]);
+  ];
+});
 
-  // Tasks data
-  const [tasks, setTasks] = useState([
+const [tasks, setTasks] = useState(() => {
+  const saved = localStorage.getItem('tasks');
+  return saved ? JSON.parse(saved) : [
     {
       id: "task_1",
       title: "Complete project proposal",
@@ -75,7 +79,9 @@ const App = () => {
       createdAt: "2025-06-07T10:00:00.000Z",
       tags: ["work", "urgent"]
     }
-  ]);
+  ];
+});
+
 
   // Form states
   const [newEntry, setNewEntry] = useState('');
@@ -86,7 +92,13 @@ const App = () => {
     dueDate: '',
     tags: []
   });
+useEffect(() => {
+  localStorage.setItem('journalEntries', JSON.stringify(journalEntries));
+}, [journalEntries]);
 
+useEffect(() => {
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+}, [tasks]);
   // Helper functions
   const extractTags = (text) => {
     const tagRegex = /#[\w]+/g;
@@ -122,7 +134,7 @@ const App = () => {
       const matchesTag = !selectedTag || entry.tags.includes(selectedTag);
       return matchesSearch && matchesDate && matchesTag;
     });
-  }, [journalEntries, searchQuery, selectedDate, selectedTag]);
+  }, [journalEntries,selectedDate, searchQuery, selectedTag]);
 
   const filteredTasks = useMemo(() => {
     return tasks.filter(task => {
